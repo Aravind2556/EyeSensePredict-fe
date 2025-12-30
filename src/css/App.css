@@ -1,0 +1,24 @@
+
+@media (max-width: 874px){
+    .lg-menu{
+        display: none !important;
+    }
+    .sm-menu{
+        display: block !important;
+    }
+}
+
+@media (min-width: 875px){
+    .lg-menu{
+        display: block !important;
+    }
+    .sm-menu{
+        display: none !important;
+    }
+    .logo-container{
+        width: 35%;
+    }
+    .cta-container{
+        width: 35%;
+    }
+}
