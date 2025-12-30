@@ -1,6 +1,6 @@
 import React, {useState, useContext} from 'react'
 import { DContext } from '../../context/Datacontext'
-import LoginImg from '../../assets/spine.jpg'
+import LoginImg from '../../assets/2330.jpg'
 
 const Login = () => {
 

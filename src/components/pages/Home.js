@@ -1,72 +1,36 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import LiveChart from "../blocks/LiveChart";
 import { URL } from "../../utils/Range";
 
 function Home() {
+  const labels = ["Eye Redness", "Tear Film", "Blood Perfusion", "Oxygenation", "Tissue", "Hydration"];
 
-  // ===============================
-  // STATE
-  // ===============================
   const [fieldOne, setFieldOne] = useState(null);
   const [fieldTwo, setFieldTwo] = useState(null);
 
-  // ===============================
-  // CHART CONTROLS
-  // ===============================
+  const [recentPredictValue, setRecentPredictValue] = useState(null);
+  const [recenttempValue, setRecentTempValue] = useState(null)
+
+  const convertedObject = recentPredictValue
+    ? recentPredictValue.split(",").reduce((acc, value, index) => {
+      acc[labels[index]] = Number(value);
+      return acc;
+    }, {})
+    : {};
+
   const controls = {
     zoom: true,
     pan: true,
     toolbar: true
   };
 
-  // ===============================
-  // HELPERS
-  // ===============================
-  const chunkArray = (arr, size = 17) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += size) {
-      result.push(arr.slice(i, i + size));
-    }
-    return result;
-  };
-
-  const bandConfig = [
-    { band: "Blue Band", channels: ["A", "B", "C"], start: 0, end: 2 },
-    { band: "Green Band", channels: ["D", "E", "F", "G"], start: 2, end: 6 },
-    { band: "Red Band", channels: ["H", "R", "I"], start: 6, end: 9 },
-    { band: "Deep Red", channels: ["S", "J"], start: 9, end: 11 },
-    { band: "NIR-1", channels: ["T", "U", "V"], start: 11, end: 14 },
-    { band: "NIR-2", channels: ["W", "K", "L"], start: 14, end: 17 }
-  ];
-
-  const mapEvery18ToBandObjects = (values = []) => {
-    const chunks = chunkArray(values, 17);
-
-    return chunks.map((chunk, feedIndex) => ({
-      feedIndex: feedIndex + 1,
-      bands: bandConfig.flatMap(cfg =>
-        chunk.slice(cfg.start, cfg.end).map((value, idx) => ({
-          band: cfg.band,
-          channel: cfg.channels[idx],
-          value
-        }))
-      )
-    }));
-  };
-
-  // ===============================
-  // FETCH FROM THINGSPEAK
-  // ===============================
   useEffect(() => {
     if (!URL) return;
-
     const fetchData = async () => {
       try {
         const res = await fetch(URL);
         const data = await res.json();
-
         if (data?.feeds?.length > 0) {
-
           // 🔹 Combine all feeds (history)
           const allValues = data.feeds.flatMap(feed =>
             feed.field1 ? feed.field1.split(",").map(Number) : []
@@ -89,6 +53,13 @@ function Home() {
             color: "red",
             seriesName: "NIR"
           });
+
+          const lastValue = data.feeds.map(feed => feed.field3).slice(-1)[0];
+          setRecentPredictValue(lastValue);
+
+          const lastTempValue = data.feeds.map(feed => feed.field2).slice(-1)[0];
+          setRecentTempValue(lastTempValue);
+
         }
       } catch (err) {
         console.error("ThingSpeak fetch error:", err);
@@ -101,36 +72,13 @@ function Home() {
 
   }, []);
 
-  // ===============================
-  // DATA PROCESSING
-  // ===============================
   const splitEightheenBands = fieldOne?.["y-axis"] || [];
-
-  const bandWiseArrayObjects = useMemo(
-    () => mapEvery18ToBandObjects(splitEightheenBands),
-    [splitEightheenBands]
-  );
-
-  // 🔹 Group latest feed by band
-  const groupedBands = useMemo(() => {
-    if (!bandWiseArrayObjects.length) return {};
-    const latest = bandWiseArrayObjects[bandWiseArrayObjects.length - 1];
-    return latest.bands.reduce((acc, item) => {
-      if(!acc[item.band]) acc[item.band] = [];
-      acc[item.band].push({
-        channel: item.channel,
-        value: item.value
-      });
-      return acc;
-    }, {});
-  }, [bandWiseArrayObjects]);
-
 
   const channelColors = {
     // Blue Band
-    A: "#1d4ed8", 
-    B: "#7e22ce", 
-    C: "#701a75", 
+    A: "#1d4ed8",
+    B: "#7e22ce",
+    C: "#701a75",
 
     // Green Band
     D: "#dc2626",
@@ -158,54 +106,84 @@ function Home() {
     L: "#9333ea"
   };
 
+  const colorMap = {
+    "Eye Redness": "bg-red-500",
+    "Tear Film": "bg-blue-500",
+    "Blood Perfusion": "bg-green-500",
+    "Oxygenation": "bg-yellow-500",
+    "Tissue": "bg-purple-500",
+    "Hydration": "bg-pink-500",
+  };
 
   const channelSeries = (channelIndex, channelName) => ({
     "x-axis": fieldOne["x-axis"],
-    "y-axis": splitEightheenBands.filter((_, i) => i % 17 === channelIndex),
+    "y-axis": splitEightheenBands.filter((_, i) => i % 18 === channelIndex),
     color: channelColors[channelName],
     seriesName: channelName
   });
-
-
 
   if (!fieldOne || !fieldTwo) {
     return <div className="text-center mt-10">Loading...</div>;
   }
 
-  // ===============================
-  // UI
-  // ===============================
   return (
     <div className="mx-auto space-y-10 md:px-10 px-2 mb-10">
 
       {/* ================= BAND WISE GROUP VIEW ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {Object.entries(groupedBands).map(([bandName, values]) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {labels.map((label) => (
           <div
-            key={bandName}
-            className="bg-white p-4 rounded-2xl shadow-md"
+            key={label}
+            className={`
+        p-5 rounded-2xl border-l-8 ${colorMap[label]}        
+        shadow-lg hover:shadow-2xl
+        transform hover:-translate-y-1 transition-all duration-300
+      `}
           >
-            <h3 className="text-center text-primary-600 font-semibold mb-3">
-              {bandName}
-            </h3>
 
-            <div className="flex justify-around gap-4">
-              {values.map((v, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center bg-gray-50 px-4 py-2 rounded-xl"
-                >
-                  <span className="text-sm text-gray-500">
-                    {v.channel}
-                  </span>
-                  <span className="text-xl font-bold text-gray-800">
-                    {v.value}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <p className="text-2xl sm:text-3xl font-bold text-white">
+              {label}
+            </p>
+
+            {/* Value */}
+            <p className="
+        mt-3 font-extrabold 
+        text-2xl sm:text-3xl md:text-4xl lg:text-5xl
+        text-white">
+              {convertedObject?.[label] ?? "--"}
+            </p>
           </div>
         ))}
+      </div>
+
+      <div
+        className="
+    p-6 rounded-2xl 
+    bg-gradient-to-br from-red-600 to-orange-500
+    shadow-lg hover:shadow-2xl
+    transform hover:-translate-y-1 transition-all duration-300
+    text-white
+    w-full max-w-sm
+  "
+      >
+        {/* Title */}
+        <p className="text-2xl sm:text-3xl font-bold text-white">
+          Temperature
+        </p>
+
+        {/* Value */}
+        <p className="
+    mt-3 font-extrabold
+    text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+    leading-none
+  ">
+          {recenttempValue ?? "--"}°C
+        </p>
+
+        {/* Status */}
+        <p className="mt-2 text-sm opacity-80">
+          Live Sensor Data
+        </p>
       </div>
 
       {/* ================= CHARTS ================= */}
@@ -226,8 +204,6 @@ function Home() {
             lineWidth={2}
             controls={controls}
           />
-
-
         </div>
 
         <div className="w-full bg-white rounded-2xl p-4 shadow">
@@ -246,13 +222,11 @@ function Home() {
             lineWidth={2}
             controls={controls}
           />
-
-
         </div>
 
         <div className="w-full bg-white rounded-2xl p-4 shadow">
           <h3 className="text-center font-semibold text-primary-600 mb-3">
-           Eye redness / hemoglobin
+            Eye redness / hemoglobin
           </h3>
           <LiveChart
             data={[
@@ -265,7 +239,6 @@ function Home() {
             lineWidth={2}
             controls={controls}
           />
-
         </div>
 
         <div className="w-full bg-white rounded-2xl p-4 shadow">
@@ -282,8 +255,6 @@ function Home() {
             lineWidth={2}
             controls={controls}
           />
-
-
         </div>
 
         <div className="w-full bg-white rounded-2xl p-4 shadow">
@@ -301,7 +272,6 @@ function Home() {
             lineWidth={2}
             controls={controls}
           />
-
         </div>
 
         <div className="w-full bg-white rounded-2xl p-4 shadow">
@@ -320,7 +290,6 @@ function Home() {
             controls={controls}
           />
         </div>
-
       </div>
     </div>
   );
