@@ -1,4 +1,4 @@
 
-export const URL = "https://api.thingspeak.com/channels/3215816/feeds.json?api_key=953Y3XC0R2FKWEAS&results"
+export const URL = "https://api.thingspeak.com/channels/3234257/feeds.json?api_key=A20C25NUO16FW245&results"
 
 
