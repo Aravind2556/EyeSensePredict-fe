@@ -48,43 +48,9 @@ function Home() {
       try {
         const res = await fetch(URL);
         const data = await res.json();
-<<<<<<< HEAD
-        if (data?.feeds?.length > 0) {
-          // 🔹 Combine all feeds (history)
-          const allValues = data.feeds.flatMap(feed =>
-            feed.field1 ? feed.field1.split(",").map(Number) : []
-          );
-
-          setFieldOne({
-            "x-axis": data.feeds.map(f =>
-              new Date(f.created_at).getTime()
-            ),
-            "y-axis": allValues,
-            color: "blue",
-            seriesName: "CLEAR VALUE"
-          });
-
-          setFieldTwo({
-            "x-axis": data.feeds.map(f =>
-              new Date(f.created_at).getTime()
-            ),
-            "y-axis": data.feeds.map(f => Number(f.field2) || 0),
-            color: "red",
-            seriesName: "NIR"
-          });
-
-          const lastValue = data.feeds.map(feed => feed.field3).slice(-1)[0];
-          
-          setRecentPredictValue(lastValue);
-
-          const lastTempValue = data.feeds.map(feed => feed.field2).slice(-1)[0];
-          setRecentTempValue(lastTempValue);
-
-=======
         const feeds = data?.feeds ?? [];
         if (feeds.length === 0) {
           return;
->>>>>>> c173983defe7dc503e7c924e061d4689f036edb7
         }
 
         const timestamps = new Array(feeds.length);
@@ -210,7 +176,7 @@ function Home() {
   if (!fieldOne || !fieldTwo) {
     return <div className="text-center mt-10">Loading...</div>;
   }
-console.log("values are :-", convertedObject)
+
   return (
     <div className="mx-auto space-y-10 md:px-10 px-2 mb-10">
 <div className="
@@ -260,6 +226,14 @@ console.log("values are :-", convertedObject)
     <p className="text-lg sm:text-xl font-bold">Tissue Health</p>
     <p className="mt-3 font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
       {recentTissueHealthValue ?? "--"}
+    </p>
+  </div>
+
+    {/* Hyderation */}
+  <div className="p-6 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white">
+    <p className="text-lg sm:text-xl font-bold">Hyderation</p>
+    <p className="mt-3 font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+      {recentOcularHydrationValue ?? "--"}
     </p>
   </div>
 
