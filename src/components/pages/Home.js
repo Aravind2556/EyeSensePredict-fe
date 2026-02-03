@@ -55,6 +55,7 @@ function Home() {
           });
 
           const lastValue = data.feeds.map(feed => feed.field3).slice(-1)[0];
+          
           setRecentPredictValue(lastValue);
 
           const lastTempValue = data.feeds.map(feed => feed.field2).slice(-1)[0];
@@ -125,7 +126,7 @@ function Home() {
   if (!fieldOne || !fieldTwo) {
     return <div className="text-center mt-10">Loading...</div>;
   }
-
+console.log("values are :-", convertedObject)
   return (
     <div className="mx-auto space-y-10 md:px-10 px-2 mb-10">
 
