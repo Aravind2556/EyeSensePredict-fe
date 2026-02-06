@@ -282,6 +282,14 @@ function Home() {
     </p>
   </div>
 
+    {/* Hyderation */}
+  <div className="p-6 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white">
+    <p className="text-lg sm:text-xl font-bold">Hyderation</p>
+    <p className="mt-3 font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+      {recentOcularHydrationValue ?? "--"}
+    </p>
+  </div>
+
   {/* Eye Temperature */}
   <div className="p-6 rounded-xl bg-white border border-rose-200 shadow-sm hover:shadow-md transition">
     <p className="text-sm text-rose-600 font-semibold">Eye Temperature</p>
