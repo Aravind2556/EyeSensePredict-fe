@@ -232,7 +232,7 @@ function Home() {
 
   const isAbNormal = predictData?.prediction === "Abnormal";
 
-  if (!fieldOne || !fieldTwo) {
+  if (!fieldOne || !fieldTwo || !predictData) {
     return <div className="text-center mt-10">Loading...</div>;
   }
 
