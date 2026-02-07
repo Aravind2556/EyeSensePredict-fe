@@ -32,7 +32,7 @@ function Home() {
   const NORMAL_RANGES = {
     "Eye Surface Temperature": { min: 32.0, max: 35.0, unit: "°C" },
     "Ocular Redness Index": { min: 0, max: 20, unit: "" },
-    "Tear Film Stability": { min: 10, max: Infinity, unit: "sec" },
+    "Tear Film Stability": { min: 10, max: 30, unit: "sec" },
     "Perfusion Index": { min: 0.4, max: 0.7, unit: "" },
     "Ocular Oxygenation Level": { min: 95, max: 100, unit: "%" },
     "Tissue Health Index": { min: 70, max: 100, unit: "" },
